@@ -10,7 +10,7 @@ android {
     defaultConfig {
         applicationId = "com.ujjwal.aicall"
         minSdk = 26
-        targetSdk = 28
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
     }
