@@ -1,6 +1,7 @@
 package com.ujjwal.aicall
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.widget.*
@@ -28,7 +29,6 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
     private fun buildScreen() {
         val bg = Color.rgb(10, 12, 18)
         val gold = Color.rgb(225, 184, 92)
-        val white = Color.WHITE
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(24, 32, 24, 24)
@@ -66,7 +66,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         status = TextView(this).apply {
             text = "Assistant is OFF"
             textSize = 19f
-            setTextColor(white)
+            setTextColor(Color.WHITE)
             gravity = Gravity.CENTER
         }
         root.addView(status, matchWidth(42))
@@ -82,7 +82,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         root.addView(toggle, matchWidth(58))
 
         language = Button(this).apply {
-            text = "Language: हिंदी / English"
+            text = "Language: हिंदी"
             setOnClickListener {
                 hindi = !hindi
                 text = if (hindi) "Language: हिंदी" else "Language: English"
@@ -93,23 +93,55 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         langParams.topMargin = 12
         root.addView(language, langParams)
 
+        val voiceButton = Button(this).apply {
+            text = "TEST VOICE"
+            setOnClickListener { speakGreeting() }
+        }
+        val voiceParams = matchWidth(54)
+        voiceParams.topMargin = 10
+        root.addView(voiceButton, voiceParams)
+
+        val callButton = Button(this).apply {
+            text = "TRY DEMO INCOMING CALL"
+            setOnClickListener { showDemoCall() }
+        }
+        val callParams = matchWidth(54)
+        callParams.topMargin = 8
+        root.addView(callButton, callParams)
+
         val info = TextView(this).apply {
-            text = "INCOMING CALL • CALL HISTORY • CALLER DETAILS\n\nयह शुरुआती UI डेमो है। यह अभी SIM कॉल अपने आप नहीं उठाता।"
-            textSize = 14f
+            text = "INCOMING CALL • CALL HISTORY • CALLER DETAILS\n\nयह डेमो केवल स्क्रीन और आवाज़ जाँचता है। यह वास्तविक SIM कॉल नहीं उठाता।"
+            textSize = 13f
             setTextColor(Color.LTGRAY)
             gravity = Gravity.CENTER
-            setPadding(12, 28, 12, 12)
+            setPadding(12, 18, 12, 12)
         }
-        root.addView(info, matchWidth(150))
+        root.addView(info, matchWidth(112))
 
         val footer = TextView(this).apply {
-            text = "Built for Hindi + English conversations"
+            text = "Hindi + English • Demo build"
             textSize = 12f
             setTextColor(gold)
             gravity = Gravity.CENTER
         }
-        root.addView(footer, matchWidth(40))
+        root.addView(footer, matchWidth(36))
         setContentView(root)
+    }
+
+    private fun showDemoCall() {
+        val builder = AlertDialog.Builder(this)
+            .setTitle(if (hindi) "आने वाली डेमो कॉल" else "Incoming demo call")
+            .setMessage(if (hindi) "डेमो कॉलर\nयह वास्तविक फोन कॉल नहीं है।" else "Demo Caller\nThis is not a real phone call.")
+            .setNegativeButton(if (hindi) "REJECT" else "REJECT") { dialog, _ ->
+                dialog.dismiss()
+                status.text = if (hindi) "डेमो कॉल अस्वीकार की गई" else "Demo call rejected"
+            }
+            .setPositiveButton(if (hindi) "ANSWER" else "ANSWER") { dialog, _ ->
+                dialog.dismiss()
+                status.text = if (hindi) "डेमो कॉल कनेक्ट हुई" else "Demo call connected"
+                speakGreeting()
+            }
+        builder.show()
     }
 
     private fun speakGreeting() {
@@ -123,7 +155,10 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
 
     override fun onInit(statusCode: Int) {
         if (statusCode == TextToSpeech.SUCCESS) {
-            tts?.language = Locale("hi", "IN")
+            val result = tts?.setLanguage(if (hindi) Locale("hi", "IN") else Locale.US)
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                status.text = "Selected voice is not available"
+            }
         }
     }
 
