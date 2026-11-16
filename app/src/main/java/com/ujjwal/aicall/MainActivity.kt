@@ -125,7 +125,16 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
             gravity = Gravity.CENTER
         }
         root.addView(footer, matchWidth(36))
-        setContentView(root)
+        val scroll = ScrollView(this).apply {
+            setFillViewport(true)
+            setBackgroundColor(bg)
+            isVerticalScrollBarEnabled = true
+            addView(root, ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ))
+        }
+        setContentView(scroll)
     }
 
     private fun showDemoCall() {
